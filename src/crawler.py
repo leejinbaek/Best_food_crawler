@@ -29,8 +29,8 @@ def switch_frame(frame):
     driver.switch_to.default_content()
     driver.switch_to.frame(frame)
     
-#페이지 변경 함수
-def switch_page(url):
+#페이지 개수 알아내는 함수
+def switch_page():
     page = driver.page_source
     soup = BeautifulSoup(page, "html.parser")
     count = len(soup.find_all("a", class_="mBN2s"))
@@ -68,23 +68,26 @@ def crawler(keyword):
             name = food.find("span", class_="place_bluelink TYaxT").text
             menu = food.find("span", class_="KCMnt").text
             status_review = food.find_all("span", class_="h69bs")
-            status = status_review[0].text
-            review = status_review[1].text
-            #rate = food.find("span", class_="Gz3SE").text
+            rate = food.find("span", class_="h69bs orXYY")
+            if rate:
+                rate = rate.text
+                status = status_review[0].text
+                review = status_review[2].text
+                
+            else:
+                rate = None
+                status = status_review[0].text
+                review = status_review[1].text
+            
             
             food_data = {
                 "가게명" : name,
                 "요리" : menu,
                 "운영상태" : status,
-                #"별점" : rate,
+                "별점" : rate,
                 "리뷰수" : review
             }
             foods_db.append(food_data)
-    
-    #페이지 수만큼 반복
-    total_pages = switch_page(url)
-    
-    for i in range(total_pages):
-        print
+    scrap_page(soup)
     print(foods_db)
 crawler("강남역맛집")
