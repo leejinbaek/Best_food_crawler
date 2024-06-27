@@ -18,12 +18,24 @@ driver = webdriver.Chrome(options=options)
 
 #페이지 스크롤 함수
 def page_down(num):
-    body = driver.find_element(By.CSS_SELECTOR, ".XUrfU")
+    body = driver.find_element(By.TAG_NAME, "body")
     body.click()
     
     for i in range(num):
         body.send_keys(Keys.PAGE_DOWN)
-        time.sleep(1)
+        
+#frame 변경 함수
+def switch_frame(frame):
+    driver.switch_to.default_content()
+    driver.switch_to.frame(frame)
+    
+#페이지 변경 함수
+def switch_page(url):
+    page = driver.page_source
+    soup = BeautifulSoup(page, "html.parser")
+    count = len(soup.find_all("a", class_="mBN2s"))
+    return count
+    
 
 #크롤러 작성
 def crawler(keyword):
@@ -31,7 +43,7 @@ def crawler(keyword):
     #url 접근
     url = f"https://map.naver.com"
     driver.get(url)
-    WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.CLASS_NAME, "input_search")))
+    time.sleep(3)
 
     #키워드 검색
     searchbox = driver.find_element(By.CLASS_NAME, "input_search")
@@ -40,11 +52,39 @@ def crawler(keyword):
     searchbox.send_keys(Keys.ENTER)
     time.sleep(5)
     
-    #페이지 스크롤 _____________--막힘
-    scrpage = driver.find_element(By.CLASS_NAME, "body.place_on_pcmap")
-    scrpage.click()
-    page_down(40)
+    #페이지 스크롤
+    switch_frame("searchIframe")
+    page_down(100)
     
-    driver.quit()
-
+    #soup 만들기
+    content = driver.page_source
+    soup = BeautifulSoup(content, "html.parser")
+    foods_db = []
+    
+    def scrap_page(soup):
+        foods = soup.find_all("div", class_="CHC5F")
+        
+        for food in foods:
+            name = food.find("span", class_="place_bluelink TYaxT").text
+            menu = food.find("span", class_="KCMnt").text
+            status_review = food.find_all("span", class_="h69bs")
+            status = status_review[0].text
+            review = status_review[1].text
+            #rate = food.find("span", class_="Gz3SE").text
+            
+            food_data = {
+                "가게명" : name,
+                "요리" : menu,
+                "운영상태" : status,
+                #"별점" : rate,
+                "리뷰수" : review
+            }
+            foods_db.append(food_data)
+    
+    #페이지 수만큼 반복
+    total_pages = switch_page(url)
+    
+    for i in range(total_pages):
+        print
+    print(foods_db)
 crawler("강남역맛집")
