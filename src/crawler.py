@@ -6,11 +6,14 @@ from bs4 import BeautifulSoup
 import csv
 import time
 
+#키워드 입력
+keyword = input("키워드를 입력하세요: ")
+
 #옵션 설정
 options = Options()
-options.add_argument("headless")
-# options.add_argument("--start-maximized")
-# options.add_experimental_option("detach", True)
+# options.add_argument("headless")
+options.add_argument("--start-maximized")
+options.add_experimental_option("detach", True)
 
 #드라이버 설정
 driver = webdriver.Chrome(options=options)
@@ -87,11 +90,16 @@ def crawler(keyword):
                 new = None
             #review 위치 파악
             if rate is not None and new is None:
-                review = reviews[2].text
+                if len(reviews) == 2:
+                    review = reviews[1].text
+                elif len(reviews) > 2:
+                    review = reviews[2].text
             elif rate is None and new is not None:
-                review = reviews[2].text
+                if len(reviews) > 2:
+                    review = reviews[2].text
             elif rate is None and new is None:
-                review = reviews[1].text
+                if len(reviews) > 1:
+                    review = reviews[1].text
                 
             food_data = {
                 "가게명" : name,
@@ -128,6 +136,6 @@ def crawler(keyword):
         writer.writerow(food.values())
     file.close()
 
-keyword = input("키워드를 입력하세요: ")
+
 crawler(f"{keyword}")
 driver.quit()
