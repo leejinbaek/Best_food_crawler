@@ -1,4 +1,3 @@
-import pandas as pd
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
@@ -67,19 +66,26 @@ def crawler(keyword):
             name = food.find("span", class_="place_bluelink TYaxT").text
             menu = food.find("span", class_="KCMnt").text
             new = food.find("span", class_= "h69bs DjPAB")
-            status = food.find("span", class_="h69bs MqNOY").text
+            status = food.find("span", class_="h69bs MqNOY")
             rate = food.find("span", class_="h69bs orXYY")
             reviews = food.find_all("span", class_="h69bs")
             review = None
+            #
+            if status:
+                status = status.text
+            else:
+                status = None
+            #
             if rate:
                 rate = rate.text
             else:
                 rate = None
-                
+            #
             if new:
                 new = new.text
             else:
                 new = None
+            #review 위치 파악
             if rate is not None and new is None:
                 review = reviews[2].text
             elif rate is None and new is not None:
