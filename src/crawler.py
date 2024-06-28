@@ -2,17 +2,16 @@ import pandas as pd
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.keys import Keys
 from bs4 import BeautifulSoup
 import csv
 import time
+
 #옵션 설정
 options = Options()
-options.add_argument("--start-maximized")
-options.add_experimental_option("detach", True)
+options.add_argument("headless")
+# options.add_argument("--start-maximized")
+# options.add_experimental_option("detach", True)
 
 #드라이버 설정
 driver = webdriver.Chrome(options=options)
@@ -67,9 +66,9 @@ def crawler(keyword):
         for food in foods:
             name = food.find("span", class_="place_bluelink TYaxT").text
             menu = food.find("span", class_="KCMnt").text
-            new = food.find("span", class_=lambda c: c and c.strip() == "h69bs DjPAB")
-            status = food.find("span", class_=lambda c: c and c.strip() == "h69bs MqNOY").text
-            rate = food.find("span", class_=lambda c: c and c.strip() == "h69bs orXYY")
+            new = food.find("span", class_= "h69bs DjPAB")
+            status = food.find("span", class_="h69bs MqNOY").text
+            rate = food.find("span", class_="h69bs orXYY")
             reviews = food.find_all("span", class_="h69bs")
             review = None
             if rate:
@@ -123,4 +122,6 @@ def crawler(keyword):
         writer.writerow(food.values())
     file.close()
 
-crawler("강남역맛집")
+keyword = input("키워드를 입력하세요: ")
+crawler(f"{keyword}")
+driver.quit()
