@@ -7,6 +7,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.keys import Keys
 from bs4 import BeautifulSoup
+import csv
 import time
 #옵션 설정
 options = Options()
@@ -29,19 +30,12 @@ def switch_frame(frame):
     driver.switch_to.default_content()
     driver.switch_to.frame(frame)
     
-#페이지 개수 알아내는 함수
-def switch_page():
-    page = driver.page_source
-    soup = BeautifulSoup(page, "html.parser")
-    count = len(soup.find_all("a", class_="mBN2s"))
-    return count
-    
 
 #크롤러 작성
 def crawler(keyword):
     
     #url 접근
-    url = f"https://map.naver.com"
+    url = "https://map.naver.com"
     driver.get(url)
     time.sleep(3)
 
@@ -56,10 +50,16 @@ def crawler(keyword):
     switch_frame("searchIframe")
     page_down(100)
     
+    
     #soup 만들기
     content = driver.page_source
     soup = BeautifulSoup(content, "html.parser")
+    
+    
+    #저장공간 만들기
     foods_db = []
+    
+    
     
     def scrap_page(soup):
         foods = soup.find_all("div", class_="CHC5F")
@@ -67,27 +67,60 @@ def crawler(keyword):
         for food in foods:
             name = food.find("span", class_="place_bluelink TYaxT").text
             menu = food.find("span", class_="KCMnt").text
-            status_review = food.find_all("span", class_="h69bs")
-            rate = food.find("span", class_="h69bs orXYY")
+            new = food.find("span", class_=lambda c: c and c.strip() == "h69bs DjPAB")
+            status = food.find("span", class_=lambda c: c and c.strip() == "h69bs MqNOY").text
+            rate = food.find("span", class_=lambda c: c and c.strip() == "h69bs orXYY")
+            reviews = food.find_all("span", class_="h69bs")
+            review = None
             if rate:
                 rate = rate.text
-                status = status_review[0].text
-                review = status_review[2].text
-                
             else:
                 rate = None
-                status = status_review[0].text
-                review = status_review[1].text
-            
-            
+                
+            if new:
+                new = new.text
+            else:
+                new = None
+            if rate is not None and new is None:
+                review = reviews[2].text
+            elif rate is None and new is not None:
+                review = reviews[2].text
+            elif rate is None and new is None:
+                review = reviews[1].text
+                
             food_data = {
                 "가게명" : name,
                 "요리" : menu,
+                "개업" : new,
                 "운영상태" : status,
                 "별점" : rate,
-                "리뷰수" : review
+                "리뷰" : review
             }
             foods_db.append(food_data)
-    scrap_page(soup)
-    print(foods_db)
+        
+    #총 페이지 수 알아내기
+    page_btn_list = soup.find_all("a", class_="mBN2s")
+    page_num = len(page_btn_list)
+            
+    #페이지 넘기면서 크롤링 (페이지 수만큼 반복)
+    for i in range(page_num):
+        content = driver.page_source
+        soup = BeautifulSoup(content, "html.parser")
+        scrap_page(soup)
+        
+        if i < page_num - 1:
+            next_page_btn = driver.find_elements(By.CLASS_NAME, "mBN2s")[i+1]
+            next_page_btn.click()
+            time.sleep(3)
+            page_down(100)
+
+    #크롤링 결과 파일로 저장
+    file = open(f"{keyword}_navermap.csv","w")
+    writer = csv.writer(file)
+    writer.writerow(["가게명", "요리", "개업", "운영상태", "별점", "리뷰"])
+    
+    for food in foods_db:
+        writer.writerow(food.values())
+    file.close()
+
 crawler("강남역맛집")
