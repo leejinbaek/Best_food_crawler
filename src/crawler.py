@@ -107,9 +107,6 @@ def crawler(keyword):
                     review = reviews[0].text
                 elif len(reviews) == 1:
                     review = None
-            # elif rate is None and new is None and status is None:
-            #     if len(reviews) > 0:
-            #         review = reviews[0].text
                 
             food_data = {
                 "가게명" : name,
