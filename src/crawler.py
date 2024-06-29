@@ -6,7 +6,6 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.keys import Keys
 from bs4 import BeautifulSoup
 import csv
-import time
 
 #키워드 입력
 keyword = input("키워드를 입력하세요: ")
