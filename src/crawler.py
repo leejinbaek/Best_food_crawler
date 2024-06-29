@@ -1,6 +1,8 @@
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.keys import Keys
 from bs4 import BeautifulSoup
 import csv
@@ -17,6 +19,7 @@ options.add_experimental_option("detach", True)
 
 #드라이버 설정
 driver = webdriver.Chrome(options=options)
+wait = WebDriverWait(driver, 10)
 
 #페이지 스크롤 함수
 def page_down(num):
@@ -38,15 +41,17 @@ def crawler(keyword):
     #url 접근
     url = "https://map.naver.com"
     driver.get(url)
-    time.sleep(3)
+    wait.until(EC.presence_of_element_located((By.CLASS_NAME, "input_search")))
 
     #키워드 검색
     searchbox = driver.find_element(By.CLASS_NAME, "input_search")
+    if searchbox != driver.find_element(By.CLASS_NAME, "input_search"):
+        raise ValueError("search box not found")
     searchbox.send_keys(f"{keyword}")
-    time.sleep(2)
+    wait.until(EC.presence_of_element_located((By.CLASS_NAME, "button_search")))
     searchbox.send_keys(Keys.ENTER)
-    time.sleep(5)
-    
+    wait.until(EC.presence_of_element_located((By.ID, "searchIframe")))
+
     #페이지 스크롤
     switch_frame("searchIframe")
     page_down(100)
@@ -98,8 +103,13 @@ def crawler(keyword):
                 if len(reviews) > 2:
                     review = reviews[2].text
             elif rate is None and new is None:
-                if len(reviews) > 1:
-                    review = reviews[1].text
+                if len(reviews) == 2:
+                    review = reviews[0].text
+                elif len(reviews) == 1:
+                    review = None
+            # elif rate is None and new is None and status is None:
+            #     if len(reviews) > 0:
+            #         review = reviews[0].text
                 
             food_data = {
                 "가게명" : name,
@@ -124,7 +134,7 @@ def crawler(keyword):
         if i < page_num - 1:
             next_page_btn = driver.find_elements(By.CLASS_NAME, "mBN2s")[i+1]
             next_page_btn.click()
-            time.sleep(3)
+            wait.until(EC.presence_of_element_located((By.CLASS_NAME, "_place_style_loader")))
             page_down(100)
 
     #크롤링 결과 파일로 저장
