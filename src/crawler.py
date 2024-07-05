@@ -17,7 +17,7 @@ options.add_experimental_option("detach", True)
 
 #드라이버 설정
 driver = webdriver.Chrome(options=options)
-wait = WebDriverWait(driver, 10)
+wait = WebDriverWait(driver, 20)
 
 #페이지 스크롤 함수
 def page_down(num):
@@ -27,11 +27,6 @@ def page_down(num):
     for i in range(num):
         body.send_keys(Keys.PAGE_DOWN)
         
-#frame 변경 함수
-def switch_frame(frame):
-    driver.switch_to.default_content()
-    driver.switch_to.frame(frame)
-
 #페이지 스크롤&크롤링 함수
 def scroll_page(driver, max_item):
     foods_db = []
@@ -169,6 +164,15 @@ def scroll_page(driver, max_item):
                 next_page_btn.click()
                 time.sleep(1)
                 scraper()
+    
+    # 리뷰 수 기준으로 정렬, 리뷰 수가 같으면 별점 기준으로 정렬
+    foods_db.sort(key=lambda x: (int(x["리뷰수"].replace('999+', '1000')) if x["리뷰수"] else 0, float(x["별점"]) if x["별점"] else 0), reverse=True)
+
+# 정렬 후 리뷰 수를 다시 '999+'로 변환
+    for food in foods_db:
+        if food["리뷰수"] == 1000:
+            food["리뷰수"] = '999+'
+
     return foods_db
 
 #크롤러 작성
@@ -196,11 +200,9 @@ def main():
         searchbox.send_keys(f"{keyword}")
         wait.until(EC.presence_of_element_located((By.CLASS_NAME, "btn_clear")))
         searchbox.send_keys(Keys.ENTER)
-        wait.until(EC.presence_of_element_located((By.ID, "searchIframe")))
+        wait.until(EC.frame_to_be_available_and_switch_to_it((By.ID, "searchIframe")))
+                
         print("\n자료 수집중....\n")
-
-        #frame변환
-        switch_frame("searchIframe")
         
         #크롤링
         foods_db = scroll_page(driver,max_item)
@@ -210,7 +212,7 @@ def main():
             print(f"해당 사이트에서 수집할 수 있는 최대 데이터 수는 {len(foods_db)}개 입니다.\n현재까지 수집한 데이터를 저장합니다.")
         
         #크롤링 결과 파일로 저장
-        with open(f"{keyword}_navermap_{len(foods_db)}place.csv", "w", newline='', encoding='utf-8-sig') as file:
+        with open(f"{keyword}_navermap_TOP{len(foods_db)}.csv", "w", newline='', encoding='utf-8-sig') as file:
             writer = csv.writer(file)
             writer.writerow(["가게명", "요리", "개업", "운영상태", "별점", "리뷰수", "리뷰1", "리뷰2", "리뷰3"])
             for food in foods_db:
