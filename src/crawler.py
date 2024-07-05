@@ -201,8 +201,7 @@ def main():
         wait.until(EC.presence_of_element_located((By.CLASS_NAME, "btn_clear")))
         searchbox.send_keys(Keys.ENTER)
         wait.until(EC.frame_to_be_available_and_switch_to_it((By.ID, "searchIframe")))
-                
-        print("\n자료 수집중....\n")
+        print("\n자료 수집중.....\n")
         
         #크롤링
         foods_db = scroll_page(driver,max_item)
