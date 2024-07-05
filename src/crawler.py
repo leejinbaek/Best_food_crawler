@@ -20,7 +20,7 @@ options.add_experimental_option("detach", True)
 
 #드라이버 설정
 driver = webdriver.Chrome(options=options, service=service)
-wait = WebDriverWait(driver, 5)
+wait = WebDriverWait(driver, 10)
 
 #페이지 스크롤 함수
 def page_down(num):
@@ -203,22 +203,17 @@ def main():
         searchbox.send_keys(f"{keyword}")
         wait.until(EC.presence_of_element_located((By.CLASS_NAME, "btn_clear")))
         searchbox.send_keys(Keys.ENTER)
-        # 프레임 로드 대기 및 전환 (여러 번 시도)
-        max_attempts = 10
-        for attempt in range(max_attempts):
-            try:
-                wait.until(lambda driver: driver.execute_script("return document.getElementById('searchIframe') != null"))
-                driver.switch_to.frame(driver.find_element(By.ID, "searchIframe"))
-                print(f"Successfully switched to frame on attempt {attempt + 1}")
-                break
-            except Exception as e:
-                print(f"Attempt {attempt + 1} failed: {str(e)}")
-                time.sleep(2)
-        else:
-            raise Exception("Failed to switch to the frame")
-
-            # wait.until(EC.frame_to_be_available_and_switch_to_it((By.ID, "searchIframe")))
         
+        ######## 오류: 실행할떄마다 TimeOutExeption 발생. searchIframe을 찾았다가 못찾았다가 함. 원인은 찾지 못함. ########
+        # vscode 종료후 재실행 하면 정상적으로 작동됨
+        
+        ######## wait.until(EC.frame_to_be_available_and_switch_to_it((By.ID, "searchIframe"))) ########
+        
+        #JS를 통해 iframe으로 직접 접근하는 driver.execute(window.frame)을 사용 해봤지만 실패
+        #해당요소가 존재하는지 여러번 확인하는 작업을 해봤지만 실패
+        #driver 버전 문제인가 싶어 driver manager로 버전 관리 해봤지만 실패
+        
+        wait.until(EC.frame_to_be_available_and_switch_to_it((By.ID, "searchIframe")))
         #iframe 변경 확인 후 문장 출력
         print("\n자료 수집중.....\n")
         
