@@ -1,23 +1,26 @@
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.keys import Keys
+from webdriver_manager.chrome import ChromeDriverManager
 from bs4 import BeautifulSoup
 import traceback
 import time
 import csv
 
 #옵션 설정
+service = Service(ChromeDriverManager().install())
 options = Options()
 options.add_argument("headless")
 options.add_argument("--start-maximized")
 options.add_experimental_option("detach", True)
 
 #드라이버 설정
-driver = webdriver.Chrome(options=options)
-wait = WebDriverWait(driver, 20)
+driver = webdriver.Chrome(options=options, service=service)
+wait = WebDriverWait(driver, 5)
 
 #페이지 스크롤 함수
 def page_down(num):
@@ -200,13 +203,29 @@ def main():
         searchbox.send_keys(f"{keyword}")
         wait.until(EC.presence_of_element_located((By.CLASS_NAME, "btn_clear")))
         searchbox.send_keys(Keys.ENTER)
-        wait.until(EC.frame_to_be_available_and_switch_to_it((By.ID, "searchIframe")))
+        # 프레임 로드 대기 및 전환 (여러 번 시도)
+        max_attempts = 10
+        for attempt in range(max_attempts):
+            try:
+                wait.until(lambda driver: driver.execute_script("return document.getElementById('searchIframe') != null"))
+                driver.switch_to.frame(driver.find_element(By.ID, "searchIframe"))
+                print(f"Successfully switched to frame on attempt {attempt + 1}")
+                break
+            except Exception as e:
+                print(f"Attempt {attempt + 1} failed: {str(e)}")
+                time.sleep(2)
+        else:
+            raise Exception("Failed to switch to the frame")
+
+            # wait.until(EC.frame_to_be_available_and_switch_to_it((By.ID, "searchIframe")))
+        
+        #iframe 변경 확인 후 문장 출력
         print("\n자료 수집중.....\n")
         
         #크롤링
         foods_db = scroll_page(driver,max_item)
         
-        #
+        #안내 문구 출력
         if len(foods_db) < max_item:
             print(f"해당 사이트에서 수집할 수 있는 최대 데이터 수는 {len(foods_db)}개 입니다.\n현재까지 수집한 데이터를 저장합니다.")
         
