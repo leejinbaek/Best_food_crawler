@@ -205,9 +205,9 @@ def main():
         searchbox.send_keys(Keys.ENTER)
         
         ######## 오류: 실행할떄마다 TimeOutExeption 발생. searchIframe을 찾았다가 못찾았다가 함. 원인은 찾지 못함. ########
-        # vscode 종료후 재실행 하면 정상적으로 작동됨
         
         ######## wait.until(EC.frame_to_be_available_and_switch_to_it((By.ID, "searchIframe"))) ########
+         # vscode 종료후 재실행 하면 처음 한번은 정상적으로 작동됨. 그 이후 돌발적으로 코드 오류가 나는 것은 이유를 알 수 없음.
         
         #JS를 통해 iframe으로 직접 접근하는 driver.execute(window.frame)을 사용 해봤지만 실패
         #해당요소가 존재하는지 여러번 확인하는 작업을 해봤지만 실패
