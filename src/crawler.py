@@ -204,16 +204,24 @@ def main():
         wait.until(EC.presence_of_element_located((By.CLASS_NAME, "btn_clear")))
         searchbox.send_keys(Keys.ENTER)
         
-        ######## 오류: 실행할떄마다 TimeOutExeption 발생. searchIframe을 찾았다가 못찾았다가 함. 원인은 찾지 못함. ########
+        ######## 오류: 실행할때마다 TimeOutExeption 발생. searchIframe을 찾았다가 못찾았다가 함. 원인은 찾지 못함. ########
         
         ######## wait.until(EC.frame_to_be_available_and_switch_to_it((By.ID, "searchIframe"))) ########
-         # vscode 종료후 재실행 하면 처음 한번은 정상적으로 작동됨. 그 이후 돌발적으로 코드 오류가 나는 것은 이유를 알 수 없음.
+         # 2024.07.05 vscode 종료후 재실행 하면 정상적으로 작동됨. 그 이후 돌발적으로 코드 오류가 나는 것은 이유를 알 수 없음.
+         # 2024.07.06 정상적으로 작동됨 // JS를 사용하지 않고 selenium의 기본 메서드를 사용해도 정상 작동
         
-        #JS를 통해 iframe으로 직접 접근하는 driver.execute(window.frame)을 사용 해봤지만 실패
         #해당요소가 존재하는지 여러번 확인하는 작업을 해봤지만 실패
         #driver 버전 문제인가 싶어 driver manager로 버전 관리 해봤지만 실패
+        #안정성을 높이기 위해 JS를 통해 iframe으로 직접 접근하는 driver.execute(window.frames)을 사용 시도
         
+        # JavaScript를 사용하여 iframe 로드 대기 및 프레임 전환
+         # wait.until(lambda driver: driver.execute_script("return window.frames['searchIframe'] != undefined;"))
+         # driver.execute_script("window.frames['searchIframe'];")
+         # driver.switch_to.frame("searchIframe")
+        
+        # selenium 기본 메서드 사용하여 iframe 로드 대기 및 프레임 전환
         wait.until(EC.frame_to_be_available_and_switch_to_it((By.ID, "searchIframe")))
+        
         #iframe 변경 확인 후 문장 출력
         print("\n자료 수집중.....\n")
         
