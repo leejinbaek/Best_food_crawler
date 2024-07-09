@@ -214,7 +214,7 @@ def main():
         #driver 버전 문제인가 싶어 driver manager로 버전 관리 해봤지만 실패
         #안정성을 높이기 위해 JS를 통해 iframe으로 직접 접근하는 driver.execute(window.frames)을 사용 시도
         
-        ########## options.add_argument("headless") - 해결: 해당 옵션 미사용 시 원활하게 돌아감 ############
+        ########## options.add_argument("headless") - 해결: 해당 옵션 미사용 시 원활하게 돌아감 ##############
         
         # JavaScript를 사용하여 iframe 로드 대기 및 프레임 전환
          # wait.until(lambda driver: driver.execute_script("return window.frames['searchIframe'] != undefined;"))
