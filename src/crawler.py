@@ -14,7 +14,7 @@ import csv
 #옵션 설정
 service = Service(ChromeDriverManager().install())
 options = Options()
-options.add_argument("headless")
+#options.add_argument("headless")
 options.add_argument("--start-maximized")
 options.add_experimental_option("detach", True)
 
@@ -213,6 +213,8 @@ def main():
         #해당요소가 존재하는지 여러번 확인하는 작업을 해봤지만 실패
         #driver 버전 문제인가 싶어 driver manager로 버전 관리 해봤지만 실패
         #안정성을 높이기 위해 JS를 통해 iframe으로 직접 접근하는 driver.execute(window.frames)을 사용 시도
+        
+        ########## options.add_argument("headless") - 해결: 해당 옵션 미사용 시 원활하게 돌아감 ############
         
         # JavaScript를 사용하여 iframe 로드 대기 및 프레임 전환
          # wait.until(lambda driver: driver.execute_script("return window.frames['searchIframe'] != undefined;"))
